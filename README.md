@@ -38,14 +38,14 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode glm \
+                --mode baichuan \
                 --train_type freeze \
                 --freeze_module_name "layers.27.,layers.26.,layers.25.,layers.24." \
                 --seed 1234 \
                 --ds_file ds_zero2_no_offload.json \
                 --gradient_checkpointing \
                 --show_loss_step 10 \
-                --output_dir ./output-glm
+                --output_dir ./output-baichuan
 ```
 baichuan四卡训练，通过CUDA_VISIBLE_DEVICES控制具体哪几块卡进行训练，如果不加该参数，表示使用运行机器上所有卡进行训练
 ```
@@ -60,14 +60,14 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode glm \
+                --mode baichuan \
                 --train_type freeze \
                 --freeze_module_name "layers.27.,layers.26.,layers.25.,layers.24." \
                 --seed 1234 \
                 --ds_file ds_zero2_no_offload.json \
                 --gradient_checkpointing \
                 --show_loss_step 10 \
-                --output_dir ./output-glm
+                --output_dir ./output-baichuan
 ```
 baichuan2单卡训练
 ```
@@ -82,14 +82,14 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode glm2 \
+                --mode baichuan \
                 --train_type freeze \
                 --freeze_module_name "layers.27.,layers.26.,layers.25.,layers.24." \
                 --seed 1234 \
                 --ds_file ds_zero2_no_offload.json \
                 --gradient_checkpointing \
                 --show_loss_step 10 \
-                --output_dir ./output-glm2
+                --output_dir ./output-baichuan
 ```
 baichuan2四卡训练，通过CUDA_VISIBLE_DEVICES控制具体哪几块卡进行训练，如果不加该参数，表示使用运行机器上所有卡进行训练
 ```
@@ -104,14 +104,14 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode glm2 \
+                --mode baichuan \
                 --train_type freeze \
                 --freeze_module_name "layers.27.,layers.26.,layers.25.,layers.24." \
                 --seed 1234 \
                 --ds_file ds_zero2_no_offload.json \
                 --gradient_checkpointing \
                 --show_loss_step 10 \
-                --output_dir ./output-glm2
+                --output_dir ./output-baichuan
 ```
 
 
@@ -150,7 +150,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode glm \
+                --mode baichuan \
                 --train_type ptuning \
                 --seed 1234 \
                 --ds_file ds_zero2_no_offload.json \
@@ -158,7 +158,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
                 --show_loss_step 10 \
                 --pre_seq_len 16 \
                 --prefix_projection True \
-                --output_dir ./output-glm
+                --output_dir ./output-baichuan
 ```
 baichuan四卡训练，通过CUDA_VISIBLE_DEVICES控制具体哪几块卡进行训练，如果不加该参数，表示使用运行机器上所有卡进行训练
 ```
@@ -173,7 +173,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode glm \
+                --mode baichuan \
                 --train_type ptuning \
                 --seed 1234 \
                 --ds_file ds_zero2_no_offload.json \
@@ -181,7 +181,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
                 --show_loss_step 10 \
                 --pre_seq_len 16 \
                 --prefix_projection True \
-                --output_dir ./output-glm
+                --output_dir ./output-baichuan
 ```
 baichuan2单卡训练
 ```
@@ -196,7 +196,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode glm2 \
+                --mode baichuan \
                 --train_type ptuning \
                 --seed 1234 \
                 --ds_file ds_zero2_no_offload.json \
@@ -204,7 +204,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
                 --show_loss_step 10 \
                 --pre_seq_len 16 \
                 --prefix_projection True \
-                --output_dir ./output-glm2
+                --output_dir ./output-baichuan
 ```
 baichuan2四卡训练，通过CUDA_VISIBLE_DEVICES控制具体哪几块卡进行训练，如果不加该参数，表示使用运行机器上所有卡进行训练
 ```
@@ -219,7 +219,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode glm2 \
+                --mode baichuan \
                 --train_type ptuning \
                 --seed 1234 \
                 --ds_file ds_zero2_no_offload.json \
@@ -227,7 +227,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
                 --show_loss_step 10 \
                 --pre_seq_len 16 \
                 --prefix_projection True \
-                --output_dir ./output-glm2
+                --output_dir ./output-baichuan
 ```
 
 
@@ -270,7 +270,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode glm \
+              --mode baichuan \
               --train_type lora \
               --lora_dim 16 \
               --lora_alpha 64 \
@@ -280,7 +280,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
               --ds_file ds_zero2_no_offload.json \
               --gradient_checkpointing \
               --show_loss_step 10 \
-              --output_dir ./output-glm
+              --output_dir ./output-baichuan
 ```
 baichuan四卡训练，通过CUDA_VISIBLE_DEVICES控制具体哪几块卡进行训练，如果不加该参数，表示使用运行机器上所有卡进行训练
 ```
@@ -295,7 +295,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode glm \
+              --mode baichuan \
               --train_type lora \
               --lora_dim 16 \
               --lora_alpha 64 \
@@ -305,7 +305,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --ds_file ds_zero2_no_offload.json \
               --gradient_checkpointing \
               --show_loss_step 10 \
-              --output_dir ./output-glm
+              --output_dir ./output-baichuan
 ```
 baichuan2单卡训练
 ```
@@ -320,7 +320,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode glm2 \
+              --mode baichuan \
               --train_type lora \
               --lora_dim 16 \
               --lora_alpha 64 \
@@ -330,7 +330,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
               --ds_file ds_zero2_no_offload.json \
               --gradient_checkpointing \
               --show_loss_step 10 \
-              --output_dir ./output-glm2
+              --output_dir ./output-baichuan
 ```
 baichuan2四卡训练，通过CUDA_VISIBLE_DEVICES控制具体哪几块卡进行训练，如果不加该参数，表示使用运行机器上所有卡进行训练
 ```
@@ -345,7 +345,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode glm2 \
+              --mode baichuan \
               --train_type lora \
               --lora_dim 16 \
               --lora_alpha 64 \
@@ -355,7 +355,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --ds_file ds_zero2_no_offload.json \
               --gradient_checkpointing \
               --show_loss_step 10 \
-              --output_dir ./output-glm2
+              --output_dir ./output-baichuan
 ```
 
 
@@ -383,13 +383,13 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode glm \
+              --mode baichuan \
               --train_type all \
               --seed 1234 \
               --ds_file ds_zero3_offload.json \
               --gradient_checkpointing \
               --show_loss_step 10 \
-              --output_dir ./output-glm
+              --output_dir ./output-baichuan
 ```
 baichuan2四卡训练，通过CUDA_VISIBLE_DEVICES控制具体哪几块卡进行训练，如果不加该参数，表示使用运行机器上所有卡进行训练
 ```
@@ -404,13 +404,13 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode glm2 \
+              --mode baichuan \
               --train_type all \
               --seed 1234 \
               --ds_file ds_zero3_no_offload.json \
               --gradient_checkpointing \
               --show_loss_step 10 \
-              --output_dir ./output-glm2
+              --output_dir ./output-baichuan
 ```
 
 
