@@ -38,7 +38,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode baichuan \
+                --mode baichuan2 \
                 --train_type freeze \
                 --freeze_module_name "layers.27.,layers.26.,layers.25.,layers.24." \
                 --seed 1234 \
@@ -60,7 +60,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode baichuan \
+                --mode baichuan2 \
                 --train_type freeze \
                 --freeze_module_name "layers.27.,layers.26.,layers.25.,layers.24." \
                 --seed 1234 \
@@ -82,7 +82,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode baichuan \
+                --mode baichuan2 \
                 --train_type freeze \
                 --freeze_module_name "layers.27.,layers.26.,layers.25.,layers.24." \
                 --seed 1234 \
@@ -104,7 +104,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
                 --num_train_epochs 2 \
                 --gradient_accumulation_steps 4 \
                 --warmup_ratio 0.1 \
-                --mode baichuan \
+                --mode baichuan2 \
                 --train_type freeze \
                 --freeze_module_name "layers.27.,layers.26.,layers.25.,layers.24." \
                 --seed 1234 \
@@ -154,7 +154,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode baichuan \
+              --mode baichuan2 \
               --train_type lora \
               --lora_dim 16 \
               --lora_alpha 64 \
@@ -179,7 +179,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode baichuan \
+              --mode baichuan2 \
               --train_type lora \
               --lora_dim 16 \
               --lora_alpha 64 \
@@ -204,7 +204,7 @@ CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode baichuan \
+              --mode baichuan2 \
               --train_type lora \
               --lora_dim 16 \
               --lora_alpha 64 \
@@ -229,7 +229,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode baichuan \
+              --mode baichuan2 \
               --train_type lora \
               --lora_dim 16 \
               --lora_alpha 64 \
@@ -267,7 +267,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode baichuan \
+              --mode baichuan2 \
               --train_type all \
               --seed 1234 \
               --ds_file ds_zero3_offload.json \
@@ -288,7 +288,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 deepspeed --master_port 520 train.py \
               --num_train_epochs 2 \
               --gradient_accumulation_steps 4 \
               --warmup_ratio 0.1 \
-              --mode baichuan \
+              --mode baichuan2 \
               --train_type all \
               --seed 1234 \
               --ds_file ds_zero3_no_offload.json \
