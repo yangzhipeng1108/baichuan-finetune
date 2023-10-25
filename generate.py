@@ -33,13 +33,14 @@ def main(
     ), "Please specify a --base_model, e.g. --base_model='huggyllama/llama-7b'"
 
     prompter = Prompter(prompt_template)
-    tokenizer = MODE[args.mode]["tokenizer"].from_pretrained(base_model)
+    tokenizer = MODE[args.mode]["tokenizer"].from_pretrained(base_model,trust_remote_code=True,)
     if device == "cuda":
         model = MODE[args.mode]["model"].from_pretrained(
             base_model,
             load_in_8bit=load_8bit,
             torch_dtype=torch.float16,
             device_map="auto",
+            trust_remote_code=True,
         )
 
     elif device == "mps":
@@ -47,11 +48,12 @@ def main(
             base_model,
             device_map={"": device},
             torch_dtype=torch.float16,
+            trust_remote_code=True,
         )
 
     else:
         model = MODE[args.mode]["model"].from_pretrained(
-            base_model, device_map={"": device}, low_cpu_mem_usage=True
+            base_model, device_map={"": device}, low_cpu_mem_usage=True,trust_remote_code=True,
         )
 
     if not load_8bit:
@@ -121,3 +123,9 @@ if __name__ == "__main__":
     parser.add_argument("--mode", type=str, default="glm2", help="")
     args = parser.parse_args()
     main(args.load_8bit, args.base_model, "")
+
+
+'''
+python generate.py  --base_model output-bc2/epoch-3-step-201/ --mode baichuan2
+python generate.py  --base_model output-glm2/epoch-3-step-201/ --mode glm2
+'''
