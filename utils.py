@@ -1,14 +1,4 @@
-# -*- coding:utf-8 -*-
-# @project: ChatGPT
-# @filename: utils
-# @author: 刘聪NLP
-# @zhihu: https://www.zhihu.com/people/LiuCongNLP
-# @contact: logcongcong@gmail.com
-# @time: 2023/8/6 16:13
-"""
-    文件说明：
-            
-"""
+
 import torch
 import random
 import numpy as np
@@ -197,6 +187,13 @@ def save_model(model, tokenizer, output_dir, model_name, state_dict=None):
         model.save_pretrained(save_dir, state_dict=state_dict, torch_dtype=torch.float16)
     tokenizer.save_pretrained(save_dir)
 
+def save_model_int(model, tokenizer, output_dir, model_name, state_dict=None):
+    save_dir = os.path.join(output_dir, model_name)
+    if state_dict == None:
+        model.save_pretrained(save_dir)
+    else:
+        model.save_pretrained(save_dir, state_dict=state_dict)
+    tokenizer.save_pretrained(save_dir)
 
 def get_optimizer_grouped_parameters(
     model,
