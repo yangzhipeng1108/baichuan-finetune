@@ -1,5 +1,5 @@
 ## baichuan 针对 Belle数据Lora微调
-### 微调lora 模型数据
+### Baichuan2-13B-Chat微调lora 模型数据
 https://huggingface.co/yangzp1108/baichuan-finetune/tree/main
 
 ## baichuan微调
