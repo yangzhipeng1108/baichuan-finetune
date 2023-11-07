@@ -1,3 +1,6 @@
+## baichuan 针对 Belle数据Lora微调
+### 微调lora 模型数据
+https://huggingface.co/yangzp1108/baichuan-finetune/tree/main
 
 ## baichuan微调
 本项目主要针对baichuan和baichuan2模型进行不同方式的微调（Freeze方法、Lora方法、全量参数等），并对比大模型在不同微调方法上的效果，主要针对信息抽取任务、生成任务、分类任务等。
