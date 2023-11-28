@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 """
     文件说明：
             
@@ -12,16 +11,20 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler
 from torch.utils.data.distributed import DistributedSampler
 import deepspeed
-from utils import print_trainable_parameters, print_rank_0, to_device, set_random_seed, save_model,save_model_int
-from utils import DataCollator
+from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
+from utils import print_trainable_parameters, print_rank_0, to_device, set_random_seed, save_model
+from utils import DataCollator,get_optimizer_grouped_parameters
 from peft import LoraConfig, get_peft_model
 from model import MODE
 # import torch_tccl
-from transformers import (
-    TrainingArguments,
-    HfArgumentParser,
 
+from transformers import (
+    AutoModelForCausalLM,
+    SchedulerType,
+    default_data_collator,
+    get_scheduler,
 )
+
 try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
@@ -71,12 +74,13 @@ def parse_args():
 def main():
     args = parse_args()
 
-    torch.cuda.set_device(args.local_rank)
-    device = torch.device("cuda", args.local_rank)
-    # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-    # torch.distributed.init_process_group(backend='nccl')
-    deepspeed.init_distributed()
-
+    if args.local_rank == -1:
+        device = torch.device("cuda")
+    else:
+        torch.cuda.set_device(args.local_rank)
+        device = torch.device("cuda", args.local_rank)
+        torch.distributed.init_process_group(backend='nccl')
+        deepspeed.init_distributed()
     args.global_rank = torch.distributed.get_rank()
 
     with open(args.ds_file, "r", encoding="utf-8") as fh:
@@ -93,14 +97,13 @@ def main():
     set_random_seed(args.seed)
     torch.distributed.barrier()
     # load tokenizer
-    tokenizer = MODE[args.mode]["tokenizer"].from_pretrained(args.model_name_or_path, trust_remote_code=True)
-    tokenizer.padding_side = "left"
+    tokenizer = MODE[args.mode]["tokenizer"].from_pretrained(args.model_name_or_path)
     print_rank_0("tokenizer.pad_token: {}".format(tokenizer.pad_token), args.global_rank)
     print_rank_0("tokenizer.eos_token: {}".format(tokenizer.eos_token), args.global_rank)
 
     # load model
     if args.train_type == "lora":
-        model = MODE[args.mode]["model"].from_pretrained(args.model_name_or_path,device_map={"": args.local_rank}, trust_remote_code=True,torch_dtype=torch.float16,load_in_8bit=True )
+        model = MODE[args.mode]["model"].from_pretrained(args.model_name_or_path,device_map={"": args.local_rank})
         lora_module_name = args.lora_module_name.split(",")
         config = LoraConfig(r=args.lora_dim,
                             lora_alpha=args.lora_alpha,
@@ -113,21 +116,21 @@ def main():
         model = get_peft_model(model, config)
         model.config.torch_dtype = torch.float32
     elif args.train_type == "freeze":
-        model = MODE[args.mode]["model"].from_pretrained(args.model_name_or_path,device_map={"": args.local_rank}, trust_remote_code=True,torch_dtype=torch.float16,load_in_8bit=True )
+        model = MODE[args.mode]["model"].from_pretrained(args.model_name_or_path,device_map={"": args.local_rank})
         freeze_module_name = args.freeze_module_name.split(",")
         for name, param in model.named_parameters():
             if not any(nd in name for nd in freeze_module_name):
                 param.requires_grad = False
     elif args.train_type == "ptuning":
-        config = MODE[args.mode]["config"].from_pretrained(args.model_name_or_path,device_map={"": args.local_rank}, trust_remote_code=True,torch_dtype=torch.float16,load_in_8bit=True )
+        config = MODE[args.mode]["config"].from_pretrained(args.model_name_or_path,device_map={"": args.local_rank})
         config.pre_seq_len = args.pre_seq_len
         config.prefix_projection = args.prefix_projection
-        model = MODE[args.mode]["model"].from_pretrained(args.model_name_or_path, config=config,device_map={"": args.local_rank}, trust_remote_code=True,torch_dtype=torch.float16,load_in_8bit=True )
+        model = MODE[args.mode]["model"].from_pretrained(args.model_name_or_path, config=config,device_map={"": args.local_rank})
         for name, param in model.named_parameters():
             if not any(nd in name for nd in ["prefix_encoder"]):
                 param.requires_grad = False
     elif args.train_type == "all":
-        model = MODE[args.mode]["model"].from_pretrained(args.model_name_or_path,device_map={"": args.local_rank}, trust_remote_code=True,torch_dtype=torch.float16,load_in_8bit=True )
+        model = MODE[args.mode]["model"].from_pretrained(args.model_name_or_path,device_map={"": args.local_rank})
     else:
         raise Exception("train_type无效")
 
@@ -175,41 +178,12 @@ def main():
 
             model.get_input_embeddings().register_forward_hook(make_inputs_require_grad)
 
-    def get_optimizer_grouped_parameters(model,
-                                         weight_decay,
-                                         no_decay_name_list=[
-                                             "bias", "LayerNorm.weight"
-                                         ]):
-        optimizer_grouped_parameters = [
-            {
-                "params": [
-                    p for n, p in model.named_parameters()
-                    if (not any(nd in n
-                                for nd in no_decay_name_list) and p.requires_grad)
-                ],
-                "weight_decay":
-                    weight_decay,
-            },
-            {
-                "params": [
-                    p for n, p in model.named_parameters()
-                    if (any(nd in n
-                            for nd in no_decay_name_list) and p.requires_grad)
-                ],
-                "weight_decay":
-                    0.0,
-            },
-        ]
-        return optimizer_grouped_parameters
+    # init deepspeed
 
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
-        model, args.weight_decay)
+        model, args.weight_decay, args.learning_rate)
 
-    from transformers import (
-        get_scheduler,
-    )
-
-    AdamOptimizer =  torch.optim.Adam
+    AdamOptimizer =  FusedAdam
     optimizer = AdamOptimizer(optimizer_grouped_parameters,
                               lr=args.learning_rate,
                               betas=(0.9, 0.95))
@@ -223,7 +197,14 @@ def main():
         num_training_steps=args.num_train_epochs * num_update_steps_per_epoch,
     )
 
-    # init deepspeed
+    model, optimizer, _, lr_scheduler = deepspeed.initialize(
+        model=model,
+        optimizer=optimizer,
+        args=args,
+        config=ds_config,
+        lr_scheduler=lr_scheduler,
+        dist_init_required=True)
+
     # model, optimizer, _, lr_scheduler = deepspeed.initialize(model=model, args=args, config=ds_config,
     #                                                          dist_init_required=True)
     model.train()
@@ -232,25 +213,19 @@ def main():
     # train
     from datetime import datetime
     start_time = datetime.now()
-    global_steps = 0
     for epoch in range(args.num_train_epochs):
         print_rank_0("Beginning of Epoch {}/{}, Total Micro Batches {}".format(epoch + 1, args.num_train_epochs,
                                                                                len(train_dataloader)), args.global_rank)
         model.train()
         for step, batch in tqdm(enumerate(train_dataloader), total=len(train_dataloader), unit="batch"):
-            optimizer.zero_grad()
             batch = to_device(batch, device)
-            # print_rank_0(batch, args.global_rank)
             # print(batch["input_ids"].shape)
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
             tr_loss += loss.item()
-            loss.backward()
+            model.backward(loss)
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            optimizer.step()
-            lr_scheduler.step()
-            global_steps += 1
-
+            model.step()
             if (step + 1) % args.gradient_accumulation_steps == 0:
                 global_step += 1
                 # write loss
@@ -261,7 +236,7 @@ def main():
                                                                                                 args.show_loss_step * args.gradient_accumulation_steps)
                                                                                         ),
                                  args.global_rank)
-                    print_rank_0("step: {}-{}-{}".format(step + 1, global_step, global_steps), args.global_rank)
+                    print_rank_0("step: {}-{}-{}".format(step + 1, global_step, model.global_steps), args.global_rank)
                     if args.global_rank <= 0:
                         tb_write.add_scalar("train_loss", (tr_loss - logging_loss) /
                                             (args.show_loss_step * args.gradient_accumulation_steps), global_step)
@@ -269,13 +244,23 @@ def main():
                 # save model
                 if args.save_model_step is not None and global_step % args.save_model_step == 0:
                     # 若zero3训练，模型参数需要合并保存
-
-                    if args.global_rank <= 0:
-                        save_model_int(model, tokenizer, args.output_dir, f"epoch-{epoch + 1}-step-{global_step}")
+                    if ds_config["zero_optimization"]["stage"] == 3:
+                        state_dict = model._zero3_consolidated_16bit_state_dict()
+                        if args.global_rank <= 0:
+                            save_model(model, tokenizer, args.output_dir, f"epoch-{epoch + 1}-step-{global_step}",
+                                       state_dict)
+                    else:
+                        if args.global_rank <= 0:
+                            save_model(model, tokenizer, args.output_dir, f"epoch-{epoch + 1}-step-{global_step}")
                     model.train()
 
-        if args.global_rank <= 0:
-            save_model_int(model, tokenizer, args.output_dir, f"epoch-{epoch + 1}-step-{global_step}")
+        if ds_config["zero_optimization"]["stage"] == 3:
+            state_dict = model._zero3_consolidated_16bit_state_dict()
+            if args.global_rank <= 0:
+                save_model(model, tokenizer, args.output_dir, f"epoch-{epoch + 1}-step-{global_step}", state_dict)
+        else:
+            if args.global_rank <= 0:
+                save_model(model, tokenizer, args.output_dir, f"epoch-{epoch + 1}-step-{global_step}")
 
     end_time = datetime.now()
     if args.global_rank:
